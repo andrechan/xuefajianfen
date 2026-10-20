@@ -144,9 +144,10 @@ const DATA = `12|（一）飲酒後駕駛機動車的
 
 const QUESTIONS = DATA.trim().split('\n').map((line, i) => {
   const [score, text] = line.split('|');
-  return { id: i, score: parseInt(score), text: text, asked: 0, correct: 0, wrong: 0 };
+  return { id: i, score: parseInt(score), text: text.replace(/^（[一二三四五六七八九十]+）/, ''), asked: 0, correct: 0, wrong: 0 };
 });
 
+// localStorage 持久化
 const SAVE_KEY = 'trafficQuizStats_v1';
 try {
   const saved = JSON.parse(localStorage.getItem(SAVE_KEY));
@@ -162,12 +163,13 @@ function saveStats() {
     localStorage.setItem(SAVE_KEY, JSON.stringify(
       QUESTIONS.map(q => ({ id: q.id, a: q.asked, c: q.correct, w: q.wrong }))
     ));
-  } catch (e) {}
+  } catch (e) { /* localStorage 不可用时跳过保存 */ }
 }
 
 let current = null;
 let answered = false;
 
+// 優先級：未出過的題 > 錯誤次數多 > 正確次數少
 function pickQuestion() {
   const pool = QUESTIONS.filter(q => q.asked === 0);
   let chosen;
