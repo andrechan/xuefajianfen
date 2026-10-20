@@ -246,6 +246,10 @@ function nextQuestion() {
   current = pickQuestion();
   current.asked++;
   saveStats();
+  showQuestion();
+}
+
+function showQuestion() {
   document.getElementById('quizQuestion').textContent = current.text;
   document.getElementById('feedback').textContent = '';
   document.getElementById('feedback').className = 'feedback';
@@ -318,7 +322,9 @@ document.getElementById('resetBtn').onclick = function () {
   saveStats();
   updateStats();
   renderTable();
-  nextQuestion();
+  answered = false;
+  current = pickQuestion();
+  showQuestion();
 };
 
 document.getElementById('nextBtn').onclick = nextQuestion;
