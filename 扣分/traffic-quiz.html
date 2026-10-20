@@ -47,6 +47,22 @@
   .feedback { min-height: 28px; text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 14px; }
   .feedback.ok { color: #2e8b57; }
   .feedback.err { color: #c0392b; }
+  .mode-btn {
+    padding: 8px 28px; margin: 0 6px; font-size: 14px;
+    border: 2px solid #2a5298; border-radius: 20px;
+    background: #fff; color: #2a5298; cursor: pointer;
+  }
+  .mode-btn.active { background: #2a5298; color: #fff; }
+  .learn-progress { text-align:center; color:#888; font-size:14px; margin-bottom:10px; }
+  .learn-answer {
+    text-align:center; margin: 4px 0 16px; font-size: 18px; font-weight: bold;
+  }
+  .learn-nav { display:flex; justify-content:space-between; margin-bottom:16px; }
+  .learn-nav button { padding: 10px 30px; font-size: 15px; border:none;
+    border-radius: 20px; background:#2a5298; color:#fff; cursor:pointer; }
+  .learn-nav button:disabled { background:#b8c4d8; cursor:default; }
+  #learnPanel.hidden { display:none; }
+  .quiz-parts.hidden { display:none; }
   .reset-btn {
     display: block; margin: 0 auto 18px; padding: 8px 24px;
     background: #fff; color: #c0392b; border: 1px solid #c0392b;
@@ -73,6 +89,10 @@
 <div class="container">
   <h1>🚦 交通违法记分测验</h1>
   <div class="subtitle">根据题目描述，选择应记（扣）的分数</div>
+  <div style="text-align:center;margin-bottom:18px;">
+    <button class="mode-btn active" id="quizModeBtn">测验模式</button>
+    <button class="mode-btn" id="learnModeBtn">学习模式</button>
+  </div>
 
   <div class="stats-bar">
     <div class="stat"><div class="num" id="qTotal">0</div><div class="label">已答题数</div></div>
@@ -81,11 +101,20 @@
     <div class="stat"><div class="num" id="qAccuracy">--</div><div class="label">正确率</div></div>
   </div>
 
-  <div class="question-card" id="questionText">载入中...</div>
+  <div id="learnPanel" class="hidden">
+    <div class="learn-progress" id="learnProgress"></div>
+    <div class="question-card" id="learnText"></div>
+    <div class="learn-answer">应记：<span class="score-badge" id="learnAnswer"></span></div>
+    <div class="learn-nav">
+      <button id="learnPrev">◀ 上一条</button>
+      <button id="learnNext">下一条 ▶</button>
+    </div>
+  </div>
+  <div class="question-card quiz-parts" id="quizQuestion">载入中...</div>
 
-  <div class="options" id="options"></div>
-  <div class="feedback" id="feedback"></div>
-  <button class="next-btn hidden" id="nextBtn">下一题 ▶</button>
+  <div class="options quiz-parts" id="options"></div>
+  <div class="feedback quiz-parts" id="feedback"></div>
+  <button class="next-btn hidden quiz-parts" id="nextBtn">下一题 ▶</button>
 
   <div class="history-panel">
     <h3>📋 题目统计（按优先级排序：错误次数 &gt; 未出题 &gt; 正确次数）</h3>
@@ -217,7 +246,7 @@ function nextQuestion() {
   current = pickQuestion();
   current.asked++;
   saveStats();
-  document.getElementById('questionText').textContent = current.text;
+  document.getElementById('quizQuestion').textContent = current.text;
   document.getElementById('feedback').textContent = '';
   document.getElementById('feedback').className = 'feedback';
   document.getElementById('nextBtn').classList.add('hidden');
@@ -252,6 +281,36 @@ function chooseAnswer(score, btn) {
   updateStats();
   renderTable();
 }
+
+let mode = 'quiz';
+let learnIdx = 0;
+const learnPanel = document.getElementById('learnPanel');
+const SC = {1:'s1',3:'s3',6:'s6',9:'s9',12:'s12'};
+
+function setMode(m) {
+  mode = m;
+  document.getElementById('quizModeBtn').classList.toggle('active', m === 'quiz');
+  document.getElementById('learnModeBtn').classList.toggle('active', m === 'learn');
+  learnPanel.classList.toggle('hidden', m !== 'learn');
+  document.querySelectorAll('.quiz-parts').forEach(el => el.classList.toggle('hidden', m !== 'quiz'));
+  if (m === 'learn') renderLearn();
+}
+
+function renderLearn() {
+  const q = QUESTIONS[learnIdx];
+  document.getElementById('learnProgress').textContent = '第 ' + (learnIdx + 1) + ' / ' + QUESTIONS.length + ' 条';
+  document.getElementById('learnText').textContent = q.text;
+  const a = document.getElementById('learnAnswer');
+  a.textContent = q.score + ' 分';
+  a.className = 'score-badge ' + SC[q.score];
+  document.getElementById('learnPrev').disabled = learnIdx === 0;
+  document.getElementById('learnNext').disabled = learnIdx === QUESTIONS.length - 1;
+}
+
+document.getElementById('quizModeBtn').onclick = () => setMode('quiz');
+document.getElementById('learnModeBtn').onclick = () => setMode('learn');
+document.getElementById('learnPrev').onclick = () => { if (learnIdx > 0) { learnIdx--; renderLearn(); } };
+document.getElementById('learnNext').onclick = () => { if (learnIdx < QUESTIONS.length - 1) { learnIdx++; renderLearn(); } };
 
 document.getElementById('resetBtn').onclick = function () {
   if (!confirm('确定要清除所有答题统计并重新开始吗？')) return;
