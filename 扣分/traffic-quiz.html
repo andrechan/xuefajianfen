@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: "Microsoft JhengHei", "PingFang TC", sans-serif;
+    font-family: "Microsoft YaHei", sans-serif;
     background: linear-gradient(135deg, #1e3c72, #2a5298);
     min-height: 100vh;
     display: flex; justify-content: center; align-items: flex-start;
@@ -19,7 +19,14 @@
     padding: 28px; box-shadow: 0 10px 40px rgba(0,0,0,.3);
   }
   h1 { text-align: center; color: #1e3c72; margin-bottom: 6px; font-size: 26px; }
-  .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 14px; }
+  .subtitle { text-align: center; color: #888; margin-bottom: 12px; font-size: 14px; }
+  .mode-switch { text-align: center; margin-bottom: 18px; }
+  .mode-btn {
+    padding: 8px 28px; margin: 0 6px; font-size: 14px;
+    border: 2px solid #2a5298; border-radius: 20px;
+    background: #fff; color: #2a5298; cursor: pointer;
+  }
+  .mode-btn.active { background: #2a5298; color: #fff; }
   .stats-bar {
     display: flex; justify-content: space-around; margin-bottom: 20px;
     background: #f0f4f8; border-radius: 10px; padding: 12px;
@@ -47,40 +54,31 @@
   .feedback { min-height: 28px; text-align: center; font-size: 16px; font-weight: bold; margin-bottom: 14px; }
   .feedback.ok { color: #2e8b57; }
   .feedback.err { color: #c0392b; }
-  .mode-btn {
-    padding: 8px 28px; margin: 0 6px; font-size: 14px;
-    border: 2px solid #2a5298; border-radius: 20px;
-    background: #fff; color: #2a5298; cursor: pointer;
-  }
-  .mode-btn.active { background: #2a5298; color: #fff; }
-  .learn-progress { text-align:center; color:#888; font-size:14px; margin-bottom:10px; }
-  .learn-answer {
-    text-align:center; margin: 4px 0 16px; font-size: 18px; font-weight: bold;
-  }
-  .learn-nav { display:flex; justify-content:space-between; margin-bottom:16px; }
-  .learn-nav button { padding: 10px 30px; font-size: 15px; border:none;
-    border-radius: 20px; background:#2a5298; color:#fff; cursor:pointer; }
-  .learn-nav button:disabled { background:#b8c4d8; cursor:default; }
-  #learnPanel.hidden { display:none; }
-  .quiz-parts.hidden { display:none; }
-  .reset-btn {
-    display: block; margin: 0 auto 18px; padding: 8px 24px;
-    background: #fff; color: #c0392b; border: 1px solid #c0392b;
-    border-radius: 18px; font-size: 13px; cursor: pointer;
-  }
-  .reset-btn:hover { background: #c0392b; color: #fff; }
   .next-btn {
     display: block; margin: 0 auto; padding: 12px 48px;
     background: #2a5298; color: #fff; border: none; border-radius: 24px;
     font-size: 16px; cursor: pointer;
   }
   .next-btn:hover { background: #1e3c72; }
+  .learn-progress { text-align:center; color:#888; font-size:14px; margin-bottom:10px; }
+  .learn-answer { text-align:center; margin: 4px 0 16px; font-size: 18px; font-weight: bold; }
+  .learn-nav { display:flex; justify-content:space-between; margin-bottom:16px; }
+  .learn-nav button { padding: 10px 30px; font-size: 15px; border:none;
+    border-radius: 20px; background:#2a5298; color:#fff; cursor:pointer; }
+  .learn-nav button:disabled { background:#b8c4d8; cursor:default; }
   .hidden { display: none; }
   .history-panel { margin-top: 24px; border-top: 1px solid #ddd; padding-top: 16px; }
   .history-panel h3 { font-size: 15px; color: #555; margin-bottom: 10px; }
-  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
+  td { word-break: break-word; }
   th, td { border: 1px solid #ddd; padding: 6px 8px; text-align: left; }
   th { background: #f0f4f8; }
+  .reset-btn {
+    display: block; margin: 18px auto 0; padding: 8px 24px;
+    background: #fff; color: #c0392b; border: 1px solid #c0392b;
+    border-radius: 18px; font-size: 13px; cursor: pointer;
+  }
+  .reset-btn:hover { background: #c0392b; color: #fff; }
   .score-badge { display: inline-block; padding: 2px 10px; border-radius: 12px; color: #fff; font-size: 12px; font-weight: bold; }
   .s1{background:#8e9aaf}.s3{background:#27ae60}.s6{background:#e67e22}.s9{background:#d35400}.s12{background:#c0392b}
 </style>
@@ -89,7 +87,8 @@
 <div class="container">
   <h1>🚦 交通违法记分测验</h1>
   <div class="subtitle">根据题目描述，选择应记（扣）的分数</div>
-  <div style="text-align:center;margin-bottom:18px;">
+
+  <div class="mode-switch">
     <button class="mode-btn active" id="quizModeBtn">测验模式</button>
     <button class="mode-btn" id="learnModeBtn">学习模式</button>
   </div>
@@ -110,16 +109,16 @@
       <button id="learnNext">下一条 ▶</button>
     </div>
   </div>
-  <div class="question-card quiz-parts" id="quizQuestion">载入中...</div>
 
+  <div class="question-card quiz-parts" id="quizQuestion">载入中...</div>
   <div class="options quiz-parts" id="options"></div>
   <div class="feedback quiz-parts" id="feedback"></div>
   <button class="next-btn hidden quiz-parts" id="nextBtn">下一题 ▶</button>
 
   <div class="history-panel">
-    <h3>📋 题目统计（按优先级排序：错误次数 &gt; 未出题 &gt; 正确次数）</h3>
+    <h3>📋 题目统计（错题优先 &gt; 未出题 &gt; 正确题）</h3>
     <table>
-      <thead><tr><th>分值</th><th>题目（节选）</th><th>出题</th><th>对</th><th>错</th></tr></thead>
+      <thead><tr><th>分值</th><th>题目</th><th>出题</th><th>对</th><th>错</th></tr></thead>
       <tbody id="historyBody"></tbody>
     </table>
   </div>
@@ -128,60 +127,60 @@
 </div>
 
 <script>
-const DATA = `12|（一）饮酒后驾驶机动车的
-12|（二）造成致人轻伤以上或者死亡的交通事故后逃逸，尚不构成犯罪的
-12|（三）使用伪造、变造的机动车号牌、行驶证、驾驶证、校车标牌或者使用其他机动车号牌、行驶证的
-12|（四）驾驶校车、公路客运汽车、旅游客运汽车载人超过核定人数百分之二十以上，或者驾驶其他载客汽车载人超过核定人数百分之百以上的
-12|（五）驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路上行驶超过规定时速百分之二十以上，或者驾驶其他机动车在高速公路、城市快速路上行驶超过规定时速百分之五十以上的
-12|（六）驾驶机动车在高速公路、城市快速路上倒车、逆行、穿越中央分隔带掉头的
-12|（七）代替实际机动车驾驶人接受交通违法行为处罚和记分牟取经济利益的
-9|（一）驾驶7座以上载客汽车载人超过核定人数百分之五十以上未达到百分之百的
-9|（二）驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路以外的道路上行驶超过规定时速百分之五十以上的
-9|（三）驾驶机动车在高速公路或者城市快速路上违法停车的
-9|（四）驾驶未悬挂机动车号牌或者故意遮挡、污损机动车号牌的机动车上道路行驶的
-9|（五）驾驶与准驾车型不符的机动车的
-9|（六）未取得校车驾驶资格驾驶校车的
-9|（七）连续驾驶中型以上载客汽车、危险物品运输车辆超过4小时未停车休息或者停车休息时间少于20分钟的
-6|（一）驾驶校车、公路客运汽车、旅游客运汽车载人超过核定人数未达到百分之二十，或者驾驶7座以上载客汽车载人超过核定人数百分之二十以上未达到百分之五十，或者驾驶其他载客汽车载人超过核定人数百分之五十以上未达到百分之百的
-6|（二）驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路上行驶超过规定时速未达到百分之二十，或者在高速公路、城市快速路以外的道路上行驶超过规定时速百分之二十以上未达到百分之五十的
-6|（三）驾驶校车、中型以上载客载货汽车、危险物品运输车辆以外的机动车在高速公路、城市快速路上行驶超过规定时速百分之二十以上未达到百分之五十，或者在高速公路、城市快速路以外的道路上行驶超过规定时速百分之五十以上的
-6|（四）驾驶载货汽车载物超过最大允许总品质百分之五十以上的
-6|（五）驾驶机动车载运爆炸物品、易燃易爆化学物品以及剧毒、放射性等危险物品，未按指定的时间、路线、速度行驶或者未悬挂警示标志并采取必要的安全措施的
-6|（六）驾驶机动车运载超限的不可解体的物品，未按指定的时间、路线、速度行驶或者未悬挂警示标志的
-6|（七）驾驶机动车运输危险化学品，未经批准进入危险化学品运输车辆限制通行的区域的
-6|（八）驾驶机动车不按交通信号灯指示通行的
-6|（九）机动车驾驶证被暂扣或者扣留期间驾驶机动车的
-6|（十）造成致人轻微伤或者财产损失的交通事故后逃逸，尚不构成犯罪的
-6|（十一）驾驶机动车在高速公路或者城市快速路上违法占用应急车道行驶的
-3|（一）驾驶校车、公路客运汽车、旅游客运汽车、7座以上载客汽车以外的其他载客汽车载人超过核定人数百分之二十以上未达到百分之五十的
-3|（二）驾驶校车、中型以上载客载货汽车、危险物品运输车辆以外的机动车在高速公路、城市快速路以外的道路上行驶超过规定时速百分之二十以上未达到百分之五十的
-3|（三）驾驶机动车在高速公路或者城市快速路上不按规定车道行驶的
-3|（四）驾驶机动车不按规定超车、让行，或者在高速公路、城市快速路以外的道路上逆行的
-3|（五）驾驶机动车遇前方机动车停车排队或者缓慢行驶时，借道超车或者占用对面车道、穿插等候车辆的
-3|（六）驾驶机动车有拨打、接听手持电话等妨碍安全驾驶的行为的
-3|（七）驾驶机动车行经人行横道不按规定减速、停车、避让行人的
-3|（八）驾驶机动车不按规定避让校车的
-3|（九）驾驶载货汽车载物超过最大允许总品质百分之三十以上未达到百分之五十的，或者违反规定载客的
-3|（十）驾驶不按规定安装机动车号牌的机动车上道路行驶的
-3|（十一）在道路上车辆发生故障、事故停车后，不按规定使用灯光或者设置警告标志的
-3|（十二）驾驶未按规定定期进行安全技术检验的公路客运汽车、旅游客运汽车、危险物品运输车辆上道路行驶的
-3|（十三）驾驶校车上道路行驶前，未对校车车况是否符合安全技术要求进行检查，或者驾驶存在安全隐患的校车上道路行驶的
-3|（十四）连续驾驶载货汽车超过4小时未停车休息或者停车休息时间少于20分钟的
-3|（十五）驾驶机动车在高速公路上行驶低于规定最低时速的
-1|（一）驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路以外的道路上行驶超过规定时速百分之十以上未达到百分之二十的
-1|（二）驾驶机动车不按规定会车，或者在高速公路、城市快速路以外的道路上不按规定倒车、掉头的
-1|（三）驾驶机动车不按规定使用灯光的
-1|（四）驾驶机动车违反禁令标志、禁止标线指示的
-1|（五）驾驶机动车载货长度、宽度、高度超过规定的
-1|（六）驾驶载货汽车载物超过最大允许总品质未达到百分之三十的
-1|（七）驾驶未按规定定期进行安全技术检验的公路客运汽车、旅游客运汽车、危险物品运输车辆以外的机动车上道路行驶的
-1|（八）驾驶擅自改变已登记的结构、构造或者特征的载货汽车上道路行驶的
-1|（九）驾驶机动车在道路上行驶时，机动车驾驶人未按规定系安全带的
-1|（十）驾驶摩托车，不戴安全头盔的`;
+const DATA = `12|饮酒后驾驶机动车的
+12|造成致人轻伤以上或者死亡的交通事故后逃逸，尚不构成犯罪的
+12|使用伪造、变造的机动车号牌、行驶证、驾驶证、校车标牌或者使用其他机动车号牌、行驶证的
+12|驾驶校车、公路客运汽车、旅游客运汽车载人超过核定人数百分之二十以上，或者驾驶其他载客汽车载人超过核定人数百分之百以上的
+12|驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路上行驶超过规定时速百分之二十以上，或者驾驶其他机动车在高速公路、城市快速路上行驶超过规定时速百分之五十以上的
+12|驾驶机动车在高速公路、城市快速路上倒车、逆行、穿越中央分隔带掉头的
+12|代替实际机动车驾驶人接受交通违法行为处罚和记分牟取经济利益的
+9|驾驶7座以上载客汽车载人超过核定人数百分之五十以上未达到百分之百的
+9|驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路以外的道路上行驶超过规定时速百分之五十以上的
+9|驾驶机动车在高速公路或者城市快速路上违法停车的
+9|驾驶未悬挂机动车号牌或者故意遮挡、污损机动车号牌的机动车上道路行驶的
+9|驾驶与准驾车型不符的机动车的
+9|未取得校车驾驶资格驾驶校车的
+9|连续驾驶中型以上载客汽车、危险物品运输车辆超过4小时未停车休息或者停车休息时间少于20分钟的
+6|驾驶校车、公路客运汽车、旅游客运汽车载人超过核定人数未达到百分之二十，或者驾驶7座以上载客汽车载人超过核定人数百分之二十以上未达到百分之五十，或者驾驶其他载客汽车载人超过核定人数百分之五十以上未达到百分之百的
+6|驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路上行驶超过规定时速未达到百分之二十，或者在高速公路、城市快速路以外的道路上行驶超过规定时速百分之二十以上未达到百分之五十的
+6|驾驶校车、中型以上载客载货汽车、危险物品运输车辆以外的机动车在高速公路、城市快速路上行驶超过规定时速百分之二十以上未达到百分之五十，或者在高速公路、城市快速路以外的道路上行驶超过规定时速百分之五十以上的
+6|驾驶载货汽车载物超过最大允许总质量百分之五十以上的
+6|驾驶机动车运载爆炸物品、易燃易爆化学物品以及剧毒、放射性等危险物品，未按指定的时间、路线、速度行驶或者未悬挂警示标志并采取必要的安全措施的
+6|驾驶机动车运载超限的不可解体的物品，未按指定的时间、路线、速度行驶或者未悬挂警示标志的
+6|驾驶机动车运输危险化学品，未经批准进入危险化学品运输车辆限制通行的区域的
+6|驾驶机动车不按交通信号灯指示通行的
+6|机动车驾驶证被暂扣或者扣留期间驾驶机动车的
+6|造成致人轻微伤或者财产损失的交通事故后逃逸，尚不构成犯罪的
+6|驾驶机动车在高速公路或者城市快速路上违法占用应急车道行驶的
+3|驾驶校车、公路客运汽车、旅游客运汽车、7座以上载客汽车以外的其他载客汽车载人超过核定人数百分之二十以上未达到百分之五十的
+3|驾驶校车、中型以上载客载货汽车、危险物品运输车辆以外的机动车在高速公路、城市快速路以外的道路上行驶超过规定时速百分之二十以上未达到百分之五十的
+3|驾驶机动车在高速公路或者城市快速路上不按规定车道行驶的
+3|驾驶机动车不按规定超车、让行，或者在高速公路、城市快速路以外的道路上逆行的
+3|驾驶机动车遇前方机动车停车排队或者缓慢行驶时，借道超车或者占用对面车道、穿插等候车辆的
+3|驾驶机动车有拨打、接听手持电话等妨碍安全驾驶的行为的
+3|驾驶机动车行经人行横道不按规定减速、停车、避让行人的
+3|驾驶机动车不按规定避让校车的
+3|驾驶载货汽车载物超过最大允许总质量百分之三十以上未达到百分之五十的，或者违反规定载客的
+3|驾驶不按规定安装机动车号牌的机动车上道路行驶的
+3|在道路上车辆发生故障、事故停车后，不按规定使用灯光或者设置警告标志的
+3|驾驶未按规定定期进行安全技术检验的公路客运汽车、旅游客运汽车、危险物品运输车辆上道路行驶的
+3|驾驶校车上道路行驶前，未对校车车况是否符合安全技术要求进行检查，或者驾驶存在安全隐患的校车上道路行驶的
+3|连续驾驶载货汽车超过4小时未停车休息或者停车休息时间少于20分钟的
+3|驾驶机动车在高速公路上行驶低于规定最低时速的
+1|驾驶校车、中型以上载客载货汽车、危险物品运输车辆在高速公路、城市快速路以外的道路上行驶超过规定时速百分之十以上未达到百分之二十的
+1|驾驶机动车不按规定会车，或者在高速公路、城市快速路以外的道路上不按规定倒车、掉头的
+1|驾驶机动车不按规定使用灯光的
+1|驾驶机动车违反禁令标志、禁止标线指示的
+1|驾驶机动车载货长度、宽度、高度超过规定的
+1|驾驶载货汽车载物超过最大允许总质量未达到百分之三十的
+1|驾驶未按规定定期进行安全技术检验的公路客运汽车、旅游客运汽车、危险物品运输车辆以外的机动车上道路行驶的
+1|驾驶擅自改变已登记的结构、构造或者特征的载货汽车上道路行驶的
+1|驾驶机动车在道路上行驶时，机动车驾驶人未按规定系安全带的
+1|驾驶摩托车，不戴安全头盔的`;
 
 const QUESTIONS = DATA.trim().split('\n').map((line, i) => {
   const [score, text] = line.split('|');
-  return { id: i, score: parseInt(score), text: text.replace(/^（[一二三四五六七八九十]+）/, ''), asked: 0, correct: 0, wrong: 0 };
+  return { id: i, score: parseInt(score), text: text, asked: 0, correct: 0, wrong: 0 };
 });
 
 // localStorage 持久化
@@ -206,19 +205,34 @@ function saveStats() {
 let current = null;
 let answered = false;
 
-// 优先级：未出过的题 > 错误次数多 > 正确次数少
-function pickQuestion() {
-  const pool = QUESTIONS.filter(q => q.asked === 0);
-  let chosen;
-  if (pool.length > 0) {
-    chosen = pool[Math.floor(Math.random() * pool.length)];
-  } else {
-    const sorted = [...QUESTIONS].sort((a, b) =>
-      (b.wrong - a.wrong) || (a.correct - b.correct) || (Math.random() - 0.5));
-    const topPool = sorted.filter(q => q.wrong === sorted[0].wrong);
-    chosen = topPool[Math.floor(Math.random() * topPool.length)];
+// 选题优先级：未出过的题 > 错误过的题 > 正确过的题；近5题内不重复
+const recentIds = []; // 最近5题的 id（仅会话内记录）
+function pushRecent(id) {
+  recentIds.push(id);
+  if (recentIds.length > 5) recentIds.shift();
+}
+function pickFrom(pool) {
+  const allAsked = QUESTIONS.filter(q => q.asked > 0);
+  const tiers = [pool, allAsked]; // 本级（避开近5题）无可选时，放宽到全部已答题
+  for (const tier of tiers) {
+    const cands = tier.filter(q => !recentIds.includes(q.id));
+    if (cands.length) return cands[Math.floor(Math.random() * cands.length)];
   }
-  return chosen;
+  return pool[Math.floor(Math.random() * pool.length)]; // 全部都在近5题内才允许重复
+}
+function pickQuestion() {
+  const unasked = QUESTIONS.filter(q => q.asked === 0);
+  let pool;
+  if (unasked.length > 0) {
+    pool = unasked;
+  } else {
+    pool = QUESTIONS.filter(q => q.wrong > 0);       // 错题优先重做
+    if (pool.length === 0)
+      pool = QUESTIONS.filter(q => q.correct > 0);   // 错题不够时用答对的题
+  }
+  const q = pickFrom(pool);
+  pushRecent(q.id);
+  return q;
 }
 
 function renderTable() {
@@ -226,7 +240,7 @@ function renderTable() {
     (b.wrong - a.wrong) || (a.asked - b.asked) || (a.correct - b.correct));
   document.getElementById('historyBody').innerHTML = sorted.map(q =>
     `<tr><td><span class="score-badge s${q.score}">${q.score}分</span></td>
-     <td>${q.text.length > 45 ? q.text.slice(0, 45) + '…' : q.text}</td>
+     <td>${q.text}</td>
      <td>${q.asked}</td><td style="color:#2e8b57">${q.correct}</td>
      <td style="color:#c0392b">${q.wrong}</td></tr>`).join('');
 }
@@ -241,18 +255,10 @@ function updateStats() {
   document.getElementById('qAccuracy').textContent = total ? Math.round(correct / total * 100) + '%' : '--';
 }
 
-function nextQuestion() {
-  answered = false;
-  current = pickQuestion();
-  current.asked++;
-  saveStats();
-  showQuestion();
-}
-
 function showQuestion() {
   document.getElementById('quizQuestion').textContent = current.text;
   document.getElementById('feedback').textContent = '';
-  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('feedback').className = 'feedback quiz-parts';
   document.getElementById('nextBtn').classList.add('hidden');
   const opts = document.getElementById('options');
   opts.innerHTML = '';
@@ -265,6 +271,14 @@ function showQuestion() {
   });
   updateStats();
   renderTable();
+}
+
+function nextQuestion() {
+  answered = false;
+  current = pickQuestion();
+  current.asked++;
+  saveStats();
+  showQuestion();
 }
 
 function chooseAnswer(score, btn) {
@@ -280,26 +294,22 @@ function chooseAnswer(score, btn) {
   if (!ok) btn.classList.add('wrong');
   const fb = document.getElementById('feedback');
   fb.textContent = ok ? '✔ 回答正确！' : `✘ 回答错误，正确答案是 ${current.score} 分`;
-  fb.className = 'feedback ' + (ok ? 'ok' : 'err');
+  fb.className = 'feedback quiz-parts ' + (ok ? 'ok' : 'err');
   document.getElementById('nextBtn').classList.remove('hidden');
   updateStats();
   renderTable();
 }
 
-let mode = 'quiz';
+// 学习模式
 let learnIdx = 0;
-const learnPanel = document.getElementById('learnPanel');
 const SC = {1:'s1',3:'s3',6:'s6',9:'s9',12:'s12'};
-
 function setMode(m) {
-  mode = m;
   document.getElementById('quizModeBtn').classList.toggle('active', m === 'quiz');
   document.getElementById('learnModeBtn').classList.toggle('active', m === 'learn');
-  learnPanel.classList.toggle('hidden', m !== 'learn');
+  document.getElementById('learnPanel').classList.toggle('hidden', m !== 'learn');
   document.querySelectorAll('.quiz-parts').forEach(el => el.classList.toggle('hidden', m !== 'quiz'));
   if (m === 'learn') renderLearn();
 }
-
 function renderLearn() {
   const q = QUESTIONS[learnIdx];
   document.getElementById('learnProgress').textContent = '第 ' + (learnIdx + 1) + ' / ' + QUESTIONS.length + ' 条';
@@ -310,7 +320,6 @@ function renderLearn() {
   document.getElementById('learnPrev').disabled = learnIdx === 0;
   document.getElementById('learnNext').disabled = learnIdx === QUESTIONS.length - 1;
 }
-
 document.getElementById('quizModeBtn').onclick = () => setMode('quiz');
 document.getElementById('learnModeBtn').onclick = () => setMode('learn');
 document.getElementById('learnPrev').onclick = () => { if (learnIdx > 0) { learnIdx--; renderLearn(); } };
@@ -319,6 +328,7 @@ document.getElementById('learnNext').onclick = () => { if (learnIdx < QUESTIONS.
 document.getElementById('resetBtn').onclick = function () {
   if (!confirm('确定要清除所有答题统计并重新开始吗？')) return;
   QUESTIONS.forEach(q => { q.asked = 0; q.correct = 0; q.wrong = 0; });
+  recentIds.length = 0;
   saveStats();
   updateStats();
   renderTable();
